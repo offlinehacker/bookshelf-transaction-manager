@@ -1,0 +1,16 @@
+#vim
+*.swp
+tags
+
+#osx
+.DS_Store
+.DS_Store?
+
+# sublime
+*.sublime-project
+*.sublime-workspace
+
+# webstorm
+.idea
+
+/node_modules
