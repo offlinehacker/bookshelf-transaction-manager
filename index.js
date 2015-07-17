@@ -27,11 +27,11 @@ module.exports = function (bookshelf) {
   };
 
   function extendModel(model) {
-    if (typeof input === 'string') {
+    if (typeof model === 'string') {
       model =
-        bookshelf.collection(name) || bookshelf(model) || (function() {
+        bookshelf.collection(model) || bookshelf.model(model) || (function() {
           throw new Error('The model ' + model + ' could not be resolved from the registry plugin.');
-        });
+        })();
     }
 
     if (this._transaction) {
@@ -46,7 +46,7 @@ module.exports = function (bookshelf) {
     var original = Model.prototype[method];
     Model.prototype[method] = function(Target) {
       // The first argument is always a model, so resolve it and call the original method.
-      return original.call(this, [extendModel.call(this, Target)].concat(_.rest(arguments)));
+      return original.apply(this, [extendModel.call(this, Target)].concat(_.rest(arguments)));
     };
   });
 
@@ -68,41 +68,48 @@ module.exports = function (bookshelf) {
   function applyTransaction(opts) {
     if (this._transaction) {
       opts = opts || {};
-      opts.transacting = this._transaction;
+      opts.transacting = opts.transacting || this._transaction;
     }
+
+    return opts;
   }
 
   bookshelf.Model = Model.extend({
     fetch: function (opts) {
-      applyTransaction.call(this, opts);
-      return mProto.fetch.apply(this, arguments);
+      opts = applyTransaction.call(this, opts);
+      return mProto.fetch.call(this, opts);
     },
 
     fetchAll: function (opts) {
-      applyTransaction.call(this, opts);
-      return mProto.fetchAll.apply(this, arguments);
+      opts = applyTransaction.call(this, opts);
+      return mProto.fetchAll.call(this, opts);
     },
 
     fetchOne: function (opts) {
-      applyTransaction.call(this, opts);
-      return mProto.fetchOne.apply(this, arguments);
+      opts = applyTransaction.call(this, opts);
+      return mProto.fetchOne.call(this, opts);
     },
 
     save: function (params, opts) {
-      applyTransaction.call(this, opts);
-      return mProto.fetchOne.apply(this, arguments);
+      opts = applyTransaction.call(this, opts);
+      return mProto.save.call(this, params, opts);
+    },
+
+    destroy: function (opts) {
+      opts = applyTransaction.call(this, opts);
+      return mProto.destroy.call(this, opts);
     }
   });
 
-  bookshelf.collection = Collection.extend({
+  bookshelf.Collection = Collection.extend({
     fetch: function (opts) {
-      applyTransaction.call(this, opts);
-      return cProto.fetch.apply(this, arguments);
+      opts = applyTransaction.call(this, opts);
+      return cProto.fetch.call(this, opts);
     },
 
     fetchOne: function (opts) {
-      applyTransaction.call(this, opts);
-      return cProto.fetchOne.apply(this, arguments);
+      opts = applyTransaction.call(this, opts);
+      return cProto.fetchOne.call(this, opts);
     }
   });
 };
