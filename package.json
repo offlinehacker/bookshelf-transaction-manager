@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/offlinehacker/bookshelf-transaction-manager"
+    "url": "https://github.com/GateHubNet/bookshelf-transaction-manager"
   },
   "keywords": [
     "bookshelf",
@@ -21,9 +21,9 @@
   "author": "Jaka Hudoklin",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/offlinehacker/bookshelf-transaction-manager/issues"
+    "url": "https://github.com/GateHubNet/bookshelf-transaction-manager/issues"
   },
-  "homepage": "https://github.com/offlinehacker/bookshelf-transaction-manager",
+  "homepage": "https://github.com/GateHubNet/bookshelf-transaction-manager",
   "dependencies": {
     "lodash": "^3.10.0"
   },
