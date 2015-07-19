@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-transaction-manager",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Transaction manager plugin for bookshelf",
   "main": "index.js",
   "directories": {
