@@ -9,7 +9,7 @@ module.exports = function (bookshelf) {
       cProto = bookshelf.Collection.prototype;
 
   bookshelf.withTransaction = function(cb) {
-    bookshelf.transaction(function(trx) {
+    return bookshelf.transaction(function(trx) {
       var model = function(name) {
         var model = bookshelf.model(name);
         return model ? model.extend({_transaction: trx}) : model;
