@@ -1,47 +1,42 @@
-# Bookshelf transaction manager
+# Bookshelf joi valitator
 
-This plugin works with Bookshelf.js, available here http://bookshelfjs.org.
-It provides transaction manager, which makes managment of database transactions
-simpler. Transaction manager injects transactions into every bookshelf object
-or collection, in transaction scope, so that you don't have to pass transaction
-around.
+Bookshelf joi validation plugin validates data using joi schema
 
 ## Installation
 
-    npm install bookshelf-transaction-manager
+    npm install bookshelf-joi-validator
 
 Then in your bookshelf configuration:
 
     var bookshelf = require('bookshelf')(knex);
-    bookshelf.plugin('registry')
-    bookshelf.plugin(require('bookshelf-transaction-manager');
+    bookshelf.plugin(require('bookshelf-joi-validator');
 
 ## Usage
 
-Insted of passing transaction around
+Define bookshelf model:
 
-    bookshelf.transaction(function(trx) {
-        trx.model('Model').forge().fetch({transacting: trx}).then(function(model) {
-            model.load(['relation'], {transacting: trx}).then(function(model) {
-                model.set('key', 'value');
-                return model.save({transacting: trx});
-            })
-        })
-    })
+  var user = Joi.string().alphanum().min(3).max(30);
+  var pass = Joi.string().regex(/[a-zA-Z0-9]{3,30}/);
+  var uuid = Joi.string().guid();
 
-Just use transaction manager
+  var model = bookshelf.Model.extend({
+    tableName: 'users',
 
-    bookshelf.withTransaction(function(trx) {
-        trx.model('Model').forge().fetch().then(function(model) {
-            model.load(['relation']).then(function(model) {
-                model.set('key', 'value');
-                model.save();
-            })
-        })
-    })
+    schema: {
+      create: Joi.object().keys({
+        user: user.required(),
+        pass: pass.required(),
+        uuid: uuid.required()
+      }),
+      update: Joi.object().keys({
+        user: user,
+        pass: pass
+      })
+    }
+  });
 
-Other bookshelf functions on models and collections also have transaction
-passed. You can still override transaction.
+Upon saving or creation of model, plugin checks if data is valid, and on error
+raises joi validation error.
 
 ## License
 

@@ -1,212 +1,97 @@
 'use strict';
 
-var expect = require('chai').expect,
-    chai = require('chai'),
-    sinon  = require('sinon');
+var expect = require('chai').expect;
+var chai = require('chai');
+var chaiAsPromised = require('chai-as-promised');
 
 var bookshelf = require('bookshelf');
+var Joi = require('joi');
 
-
-chai.use(require('sinon-chai'));
+chai.use(chaiAsPromised);
 
 describe('bookshelf transaction manager', function() {
   before(function() {
-    var knex = require('knex')({
+    this.knex = require('knex')({
       client: 'sqlite3', connection: { filename: ':memory:'}
     });
-    this.bookshelf = require('bookshelf')(knex);
-  });
-
-  before(function() {
-    this.fetch = sinon.stub(this.bookshelf.Model.prototype, 'fetch');
-    this.fetchAll = sinon.stub(this.bookshelf.Model.prototype, 'fetchAll');
-    this.save = sinon.stub(this.bookshelf.Model.prototype, 'save');
-    this.destroy = sinon.stub(this.bookshelf.Model.prototype, 'destroy');
-
-    this.fetchCollection = sinon.stub(this.bookshelf.Collection.prototype, 'fetch');
-    this.fetchOneCollection = sinon.stub(this.bookshelf.Collection.prototype, 'fetchOne');
-  });
-
-  beforeEach(function() {
-    this.fetch.reset();
-    this.fetchAll.reset();
-    this.save.reset();
-    this.destroy.reset();
-
-    this.fetchCollection.reset();
-    this.fetchOneCollection.reset();
-  });
-
-  before(function() {
-    this.bookshelf.plugin('registry');
+    this.bookshelf = require('bookshelf')(this.knex);
     this.bookshelf.plugin(require('../'));
   });
 
   before(function() {
-    this.transaction = sinon
-      .stub(this.bookshelf, 'transaction')
-      .callsArgWith(0, 'transaction');
+    return this.knex.schema
+      .createTable('users', function(table) {
+        table.increments('id').primary();
+        table.string('user').unique();
+        table.string('pass');
+        table.string('uuid').unique();
+      });
   });
 
-  beforeEach(function () {
-    this.transaction.reset();
-  });
+  before(function() {
+    var Model = this.bookshelf.Model;
 
-  describe('withTransaction', function() {
-    beforeEach(function(next) {
-      var self = this;
-      this.bookshelf.withTransaction(function(trx) {
-        self.trx = trx;
-        next();
-      });
-    });
+    var user = Joi.string().alphanum().min(3).max(30);
+    var pass = Joi.string().regex(/[a-zA-Z0-9]{3,30}/);
+    var uuid = Joi.string().guid();
 
-    it('should create transaction', function() {
-      expect(this.transaction).to.have.been.called;
-    });
+    this.User = this.bookshelf.Model.extend({
+      tableName: 'users',
 
-    it('should have properties defined', function() {
-      expect(this.trx.model).to.not.be.undefined;
-      expect(this.trx.collection).to.not.be.undefined;
-      expect(this.trx.transaction).to.not.be.undefined;
-    });
-
-    describe('having registered model', function() {
-      beforeEach(function() {
-        this.bookshelf._models = {};
-        this.Model = this.bookshelf.Model.extend({
-          tableName: 'records'
-        });
-
-        this.bookshelf.model('Record', this.Model);
-      });
-
-      afterEach(function () {
-        delete this.bookshelf._models;
-      });
-
-      it('should return extended registered models', function() {
-        expect(this.trx.model('Record')).to.not.be.undefined;
-        expect(this.trx.model('Record').forge()._transaction)
-          .to.be.equal('transaction');
-      });
-    });
-
-    describe('having registered collection', function() {
-      beforeEach(function() {
-        this.Collection = this.bookshelf.Collection.extend({});
-        this.bookshelf.collection('Collection', this.Collection);
-      });
-
-      afterEach(function () {
-        delete this.bookshelf._collections;
-      });
-
-      it('should return extended registered models', function() {
-        expect(this.trx.collection('Collection')).to.not.be.undefined;
-        expect(this.trx.collection('Collection').forge()._transaction)
-          .to.be.equal('transaction');
-      });
-    });
-
-    describe('relations', function() {
-      beforeEach(function() {
-        this.bookshelf._models = {};
-        this.Related = this.bookshelf.Model.extend({
-          tableName: 'related'
-        });
-        this.Model = this.bookshelf.Model.extend({
-          tableName: 'model',
-
-          _hasOne: function() {
-            return this.hasOne('Related');
-          },
-          _hasMany: function() {
-            return this.hasMany('Related');
-          }
-        });
-
-        this.model = this.Model.forge();
-
-        this.bookshelf.model('Model', this.Model);
-        this.bookshelf.model('Related', this.Related);
-      });
-
-      afterEach(function () {
-        delete this.bookshelf._models;
-        delete this.bookshelf._collections;
-      });
-
-      it('should create one related object with transaction', function() {
-        var Model = this.trx.model('Model').forge();
-        expect(Model._hasOne().relatedData.target.forge()._transaction).to.equal('transaction');
-      });
-
-      it('should create many related object with transaction', function() {
-        var Model = this.trx.model('Model').forge();
-        expect(Model._hasMany().relatedData.target.forge()._transaction).to.equal('transaction');
-      });
-    });
-
-    describe('methods', function() {
-      beforeEach(function() {
-        this.bookshelf._models = {};
-        this.Related = this.bookshelf.Model.extend({
-          tableName: 'related'
-        });
-        this.Collection = this.bookshelf.Collection.extend({});
-        this.Model = this.bookshelf.Model.extend({
-          tableName: 'model',
-
-          _hasOne: function() {
-            return this.hasOne('Related');
-          },
-          _hasMany: function() {
-            return this.hasMany('Related');
-          }
-        });
-
-        this.model = this.Model.forge();
-
-        this.bookshelf.model('Model', this.Model);
-        this.bookshelf.collection('Collection', this.Collection);
-        this.bookshelf.model('Related', this.Related);
-      });
-
-      afterEach(function () {
-        delete this.bookshelf._models;
-        delete this.bookshelf._collections;
-      });
-
-      it('should pass transaction to fetch', function() {
-        this.trx.model('Model').forge().fetch();
-        expect(this.fetch).to.have.been.calledWith(sinon.match({transacting: 'transaction'}));
-      });
-
-      it('should pass transaction to fetchAll', function() {
-        this.trx.model('Model').forge().fetchAll();
-        expect(this.fetchAll).to.have.been.calledWith(sinon.match({transacting: 'transaction'}));
-      });
-
-      it('should pass transaction to save', function() {
-        this.trx.model('Model').forge().save();
-        expect(this.save).to.have.been.calledWith(undefined, sinon.match({transacting: 'transaction'}));
-      });
-
-      it('should pass transaction to destroy', function() {
-        this.trx.model('Model').forge().destroy();
-        expect(this.destroy).to.have.been.calledWith(sinon.match({transacting: 'transaction'}));
-      });
-
-      it('should pass transaction to fetch on collection', function() {
-        this.trx.collection('Collection').forge().fetch();
-        expect(this.fetchCollection).to.have.been.calledWith(sinon.match({transacting: 'transaction'}));
-      });
-
-      it('should pass transaction to fetch one on collection', function() {
-        this.trx.collection('Collection').forge().fetchOne();
-        expect(this.fetchOneCollection).to.have.been.calledWith(sinon.match({transacting: 'transaction'}));
-      });
+      schema: {
+        create: Joi.object().keys({
+          user: user.required(),
+          pass: pass.required(),
+          uuid: uuid.required()
+        }),
+        update: Joi.object().keys({
+          user: user.optional(),
+          pass: pass.optional()
+        })
+      }
     });
   });
+
+  it('should create object if valid data is passed', function() {
+    return expect(this.User.forge({
+      user: 'admin', pass: 'abc',
+      uuid: 'C56A4180-65AA-42EC-A945-5FD21DEC0538'
+    }).save()).to.be.fulfilled;
+  });
+
+  it('should update with valid data', function() {
+    return expect(
+      this.User.forge({user: 'admin'}).fetch().then(function(user) {
+        user.set({user: 'user', pass: 'abc'});
+        return user.save();
+      })
+    ).to.be.fulfilled;
+  });
+
+  it('should error if invalid data is passed', function() {
+    return expect(
+      this.User.forge({
+        user: 'admin', pass: 'abc',
+        uuid: 'notuuid'
+      }).save()
+    )
+    .to.be.rejectedWith(
+      Error,
+      'ValidationError: child "uuid" fails because ["uuid" must be a valid GUID]'
+    );
+  });
+
+  it('should fail if update data is invalid', function() {
+    return expect(
+      this.User.forge({user: 'user'}).fetch().then(function(user) {
+        user.set({user: 'admin', pass: 'abc', somefiled: 'abcd'});
+        return user.save();
+      })
+    )
+    .to.be.rejectedWith(
+      Error,
+      'ValidationError: "somefiled" is not allowed'
+    );
+  });
+
 });

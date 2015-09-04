@@ -1,7 +1,7 @@
 {
-  "name": "bookshelf-transaction-manager",
-  "version": "0.2.3",
-  "description": "Transaction manager plugin for bookshelf",
+  "name": "bookshelf-save-hooks",
+  "version": "0.1.0",
+  "description": "Bookshelf save hooks",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -11,30 +11,31 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/GateHubNet/bookshelf-transaction-manager"
+    "url": "https://github.com/GateHubNet/bookshelf-save-hooks"
   },
   "keywords": [
     "bookshelf",
-    "transaction",
-    "manager"
+    "save",
+    "hooks"
   ],
   "author": "Jaka Hudoklin",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/GateHubNet/bookshelf-transaction-manager/issues"
+    "url": "https://github.com/GateHubNet/bookshelf-save-hooks/issues"
   },
-  "homepage": "https://github.com/GateHubNet/bookshelf-transaction-manager",
+  "homepage": "https://github.com/GateHubNet/bookshelf-save-hooks",
   "dependencies": {
+    "bluebird": "^2.9.34",
+    "joi": "^6.6.1",
     "lodash": "^3.10.0"
   },
   "devDependencies": {
     "bookshelf": "^0.8.1",
     "chai": "^3.1.0",
+    "chai-as-promised": "^5.1.0",
     "knex": "^0.8.6",
-    "mocha": "^2.2.5",
+    "mocha": "^2.3.0",
     "npm-release": "0.0.4-3",
-    "sinon": "^1.15.4",
-    "sinon-chai": "^2.8.0",
     "sqlite3": "^3.0.9"
   }
 }
