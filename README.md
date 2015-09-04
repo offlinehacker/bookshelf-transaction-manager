@@ -49,4 +49,4 @@ passed. You can still override transaction.
 
 ## Author
 
-[offlinehacker](mailto:jakahudoklin@gmail.com)
+[offlinehacker](https://github.com/offlinehacker)
