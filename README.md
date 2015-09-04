@@ -42,3 +42,11 @@ Just use transaction manager
 
 Other bookshelf functions on models and collections also have transaction
 passed. You can still override transaction.
+
+## License
+
+[MIT](https://opensource.org/licenses/MIT)
+
+## Author
+
+[offlinehacker](mailto:jakahudoklin@gmail.com)
