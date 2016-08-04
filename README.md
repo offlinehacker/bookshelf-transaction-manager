@@ -14,7 +14,7 @@ Then in your bookshelf configuration:
 
     var bookshelf = require('bookshelf')(knex);
     bookshelf.plugin('registry')
-    bookshelf.plugin(require('bookshelf-transaction-manager');
+    bookshelf.plugin(require('bookshelf-transaction-manager'));
 
 ## Usage
 
