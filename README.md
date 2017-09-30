@@ -1,5 +1,7 @@
 # Bookshelf transaction manager
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/offlinehacker/bookshelf-transaction-manager.svg)](https://greenkeeper.io/)
+
 This plugin works with Bookshelf.js, available here http://bookshelfjs.org.
 It provides transaction manager, which makes managment of database transactions
 simpler. Transaction manager injects transactions into every bookshelf object
