@@ -25,15 +25,15 @@
   },
   "homepage": "https://github.com/GateHubNet/bookshelf-transaction-manager",
   "dependencies": {
-    "lodash": "^3.10.0"
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
-    "bookshelf": "^0.8.1",
-    "chai": "^3.1.0",
-    "knex": "^0.8.6",
-    "mocha": "^2.2.5",
-    "npm-release": "0.0.4-3",
-    "sinon": "^1.15.4",
+    "bookshelf": "^0.10.4",
+    "chai": "^4.1.2",
+    "knex": "^0.13.0",
+    "mocha": "^3.5.3",
+    "npm-release": "1.0.0",
+    "sinon": "^4.0.0",
     "sinon-chai": "^2.8.0",
     "sqlite3": "^3.0.9"
   }
